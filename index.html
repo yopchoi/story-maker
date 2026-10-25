@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>나만의 이야기 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D0D0F; --surface:#1A1A1E; --ink:#F2F2F4; --muted:#A3A3AD; --line:#34343C;
+  --accent:#F2F2F4; --accent-ink:#0D0D0F;
+  --chip-bg:#26262C; --butter:#FFD66B; --butter-ink:#3A2A00;
+  --warn-bg:#3B2F10; --warn-ink:#FFE7A3; --ok-bg:#12332B; --ok-ink:#BDF3E3;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D0D0F; --surface:#1A1A1E; --ink:#F2F2F4; --muted:#A3A3AD; --line:#34343C;
+    --accent:#F2F2F4; --accent-ink:#0D0D0F;
+    --chip-bg:#26262C;
+    --warn-bg:#3B2F10; --warn-ink:#FFE7A3; --ok-bg:#12332B; --ok-ink:#BDF3E3;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D0D0F; --surface:#1A1A1E; --ink:#F2F2F4; --muted:#A3A3AD; --line:#34343C;
+  --accent:#F2F2F4; --accent-ink:#0D0D0F;
+  --chip-bg:#26262C;
+  --warn-bg:#3B2F10; --warn-ink:#FFE7A3; --ok-bg:#12332B; --ok-ink:#BDF3E3;
+  color-scheme:dark;
+}
+html{background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:17px/1.55 "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px 120px}
+header.top{padding:22px 0 8px}
+h1{font:400 30px/1.2 "Jua","Apple SD Gothic Neo",sans-serif;margin:0 0 6px}
+.lead{margin:0;color:var(--muted);font-size:16px}
+#tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;display:flex;gap:8px;padding:10px 0;background:var(--bg)}
+.tab{
+  flex:1;min-height:52px;border:2px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);
+  font:400 18px "Jua","Apple SD Gothic Neo",sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
+}
+.tab .n{width:26px;height:26px;border-radius:50%;background:var(--chip-bg);display:grid;place-items:center;font-size:15px}
+.tab.on{background:var(--butter);border-color:var(--butter);color:var(--butter-ink)}
+.tab.on .n{background:var(--butter-ink);color:var(--butter)}
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:20px;margin:14px 0}
+.panel h2{font:400 22px/1.3 "Jua","Apple SD Gothic Neo",sans-serif;margin:0 0 14px}
+.field{margin:0 0 24px}
+.field:last-child{margin-bottom:0}
+label,.lbl{display:block;font:400 20px/1.3 "Jua","Apple SD Gothic Neo",sans-serif;margin:0 0 6px}
+.req{display:inline-block;margin-left:8px;padding:1px 9px;border-radius:999px;background:var(--butter);color:var(--butter-ink);font:600 13px/1.6 "Apple SD Gothic Neo",system-ui,sans-serif;vertical-align:middle}
+.sub{margin:0 0 10px;color:var(--muted);font-size:15px}
+input[type=text],textarea{
+  width:100%;min-height:52px;padding:12px 14px;border:2px solid var(--line);border-radius:14px;
+  background:var(--bg);color:var(--ink);font:inherit;font-size:17px;
+}
+textarea{resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px}
+.mini{flex:none;min-height:52px;padding:0 16px;border-radius:14px;border:2px solid var(--line);background:var(--chip-bg);color:var(--ink);font:inherit;font-size:16px;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.chip{min-height:46px;padding:0 16px;border-radius:14px;border:2px solid var(--line);background:var(--chip-bg);color:var(--ink);font:inherit;font-size:16px;cursor:pointer}
+.chip.on{background:var(--butter);border-color:var(--butter);color:var(--butter-ink);transform:rotate(-1.5deg)}
+.hint{margin:8px 0 0;padding:8px 12px;border-radius:12px;background:var(--warn-bg);color:var(--warn-ink);font-size:15px}
+.hint[hidden]{display:none}
+#slots{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+.slot{width:68px;height:68px;border-radius:50%;border:3px solid var(--line);background:var(--chip-bg);color:var(--ink);font-size:34px;line-height:1;display:grid;place-items:center;cursor:pointer;padding:0}
+.slot.on{background:var(--butter);border-color:var(--butter);transform:rotate(-6deg)}
+.slot.add{border-style:dashed;font-size:30px;color:var(--muted)}
+.slot.empty{font-size:15px;color:var(--muted)}
+.emojis{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px}
+.em{min-height:56px;font-size:30px;line-height:1;border-radius:14px;border:2px solid var(--line);background:var(--chip-bg);cursor:pointer;padding:0}
+.em.on{background:var(--butter);border-color:var(--butter);transform:rotate(-4deg)}
+.em:disabled{opacity:.3;cursor:not-allowed}
+.btn{
+  min-height:56px;padding:0 26px;border-radius:16px;border:0;background:var(--accent);color:var(--accent-ink);
+  font:400 20px "Jua","Apple SD Gothic Neo",sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
+}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:active,.mini:active,.tab:active{transform:scale(.97)}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:6px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
+pre.card{
+  margin:0 0 12px;padding:14px 16px;border-radius:14px;background:var(--bg);border:2px solid var(--line);
+  white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:16px;line-height:1.65;
+}
+.note{margin:0 0 14px;padding:12px 14px;border-radius:14px;font-size:16px}
+.note.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.note.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.note ul{margin:6px 0 0;padding-left:20px}
+.story{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:2px solid var(--line)}
+.story:first-child{border-top:0}
+.story .t{flex:1;min-width:0;overflow-wrap:anywhere}
+details{margin:14px 0}
+summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font:400 18px "Jua","Apple SD Gothic Neo",sans-serif;color:var(--muted)}
+#toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,24px);
+  max-width:calc(100% - 32px);padding:14px 20px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:16px;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:30;text-align:center;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion: reduce){#toast{transition:none}}
+@media (max-width:520px){h1{font-size:26px}.tab{font-size:16px}.panel{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>나만의 이야기 만들기</h1>
+    <p class="lead">카드를 채우고 복사해서 Gemini에 붙여넣으면 이야기가 시작돼요.</p>
+  </header>
+  <nav id="tabs" aria-label="단계"></nav>
+  <main id="main"></main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- 선택지 ---------- */
+var EMOJIS=['🐿️','🐻','🦊','🐰','🐱','🐶','🐼','🦉','🐸','🐧','🦄','🐉','🧙','🧚','🕵️','🚀','🌟','🍀','🌈','🍩','🐢','🦋','🐙','🐳','🦁','🐯','🐨','🦔','🎈','🔮'];
+var WORLDS=['마법학교','우주 여행','동물마을','탐정사무소','바닷속 왕국','숲속 모험'];
+var GOALS=['사라진 물건 찾기','수수께끼 풀기','친구 도와주기','비밀 장소 찾기','잃어버린 길 찾기'];
+var MOODS=['신나는','신비한','따뜻한','웃긴'];
+var MY_ROLES=['신입생','탐정 수습','모험가','견습 마법사'];
+var SKILLS=['관찰하기','기억하기','달리기','손재주','동물과 친해지기','그림 그리기'];
+var TRAITS=['덜렁대는','용감한','느긋한','똑똑한','장난꾸러기','다정한'];
+var TONES=['빠르고 신나게','느릿느릿 여유롭게','차분하고 또박또박','장난스럽게','다정하고 부드럽게'];
+var CHAR_ROLES=['같이 수사하는 친구','길을 아는 동물 친구','수수께끼 안내자','엉뚱한 라이벌','도와주는 선생님'];
+var MAX_CHARS=5;
+
+/* ---------- 안전 확인 (AI도 한 번 더 확인해요) ---------- */
+var MSG_OFF='이 말은 이야기랑 안 어울려요. 다른 말로 바꿔볼까요?';
+var MSG_REAL='진짜 이름, 학교, 전화번호는 쓰지 않아요. 별명이나 새 이름으로 바꿔요.';
+var RULES=[
+  [/남친|여친|남자친구|여자친구|남편|아내|애인|연애|연인|키스|뽀뽀|결혼|커플|썸타/,MSG_OFF],
+  [/죽이|살인|살해|시체|학살|고문|폭력|때리|해치|전쟁|권총|총격|칼부림|피투성이/,MSG_OFF],
+  [/귀신|좀비|악령|저주받|공포/,MSG_OFF],
+  [/[\u2764\u2665\u{1F493}-\u{1F49F}\u{1F5A4}\u{1F90D}\u{1F90E}\u{1F9E1}\u{1F60D}\u{1F970}\u{1F618}\u{1F48B}\u{1F491}\u{1F48F}]/u,MSG_OFF],
+  [/초등학교|\d{3,}|@|https?:/,MSG_REAL]
+];
+function flag(t){
+  if(!t) return '';
+  for(var i=0;i<RULES.length;i++){ if(RULES[i][0].test(t)) return RULES[i][1]; }
+  return '';
+}
+
+/* ---------- 저장소 (실패해도 동작) ---------- */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+function loadStories(){ try{ var a=JSON.parse(lsGet('stories')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+
+/* ---------- 상태 ---------- */
+function blank(){ return {name:'',trait:'',tone:'',role:'',emoji:'',like:'',weak:''}; }
+function blankFlow(){ return {title:'',world:'',goal:'',mood:'',nick:'',role:'',mtrait:'',mskill:'',mlike:'',mweak:'',start:'',mid:'',end:''}; }
+var S={step:0,active:0,flow:blankFlow(),chars:[blank()]};
+
+function ref(path){ var p=path.split('.'); return p[0]==='flow'?[S.flow,p[1]]:[S.chars[S.active],p[1]]; }
+function get(path){ var r=ref(path); return r[0][r[1]]||''; }
+function set(path,v){ var r=ref(path); r[0][r[1]]=v; }
+function idOf(path){ return 'f-'+path.replace('.','-'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function $(s){ return document.querySelector(s); }
+
+/* ---------- 화면 조각 ---------- */
+function chips(path,list){
+  var cur=get(path);
+  return '<div class="chips">'+list.map(function(x){
+    return '<button type="button" class="chip'+(cur===x?' on':'')+'" data-chip="'+path+'" data-val="'+esc(x)+'">'+esc(x)+'</button>';
+  }).join('')+'</div>';
+}
+function field(label,path,o){
+  o=o||{};
+  var val=get(path), m=flag(val), id=idOf(path);
+  return '<div class="field">'+
+    '<label for="'+id+'">'+label+(o.req?'<span class="req">꼭</span>':'')+'</label>'+
+    (o.sub?'<p class="sub">'+o.sub+'</p>':'')+
+    (o.list?chips(path,o.list):'')+
+    '<div class="row"><input type="text" id="'+id+'" data-path="'+path+'" value="'+esc(val)+'" placeholder="'+esc(o.ph||'')+'" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false">'+
+    (o.auto?'<button type="button" class="mini" data-auto="'+path+'">알아서</button>':'')+
+    '</div><p class="hint"'+(m?'':' hidden')+'>'+m+'</p></div>';
+}
+
+function step0(){
+  return '<section class="panel"><h2>이야기의 큰 줄기</h2>'+
+    field('이야기의 세계','flow.world',{req:1,list:WORLDS,ph:'직접 써도 돼요',sub:'어디에서 일어나는 이야기일까요?'})+
+    field('이야기의 목표','flow.goal',{req:1,list:GOALS,ph:'직접 써도 돼요',sub:'무엇을 찾거나 해결할까요?'})+
+    field('분위기','flow.mood',{list:MOODS,ph:'직접 써도 돼요',auto:1})+
+    '</section>'+
+    '<section class="panel"><h2>시작, 중간, 끝</h2>'+
+    '<p class="sub">막히면 알아서 버튼을 눌러요. 반전은 AI가 몰래 준비해요.</p>'+
+    field('시작','flow.start',{ph:'예: 아침에 종소리가 안 울려서 마을이 조용하다',auto:1})+
+    field('중간','flow.mid',{ph:'예: 종탑에서 발자국과 반짝이는 가루를 발견한다',auto:1})+
+    field('끝','flow.end',{ph:'예: 종이 숨겨진 이유를 알고 다시 울린다',auto:1})+
+    field('이야기 제목','flow.title',{ph:'비워두면 나중에 같이 정해요',auto:1})+
+    '</section>'+
+    '<div class="nav"><span></span><button type="button" class="btn" data-go="1">나를 만들러 가기</button></div>';
+}
+
+function stepMe(){
+  return '<section class="panel"><h2>이야기의 주인공, 나</h2>'+
+    '<p class="sub">친구들은 내 성격과 특기를 보고 이야기를 풀어가요. 진짜 이름이나 학교는 쓰지 않아요.</p>'+
+    field('내 별명','flow.nick',{req:1,ph:'진짜 이름 말고 별명'})+
+    field('내 역할','flow.role',{list:MY_ROLES,ph:'직접 써도 돼요',auto:1})+
+    field('내 성격','flow.mtrait',{list:TRAITS,ph:'직접 써도 돼요',auto:1})+
+    field('내 특기','flow.mskill',{list:SKILLS,ph:'직접 써도 돼요',auto:1,sub:'수수께끼를 풀 때 쓸 나만의 재주예요.'})+
+    field('좋아하는 것','flow.mlike',{ph:'비워두면 알아서',auto:1})+
+    field('약점','flow.mweak',{ph:'비워두면 알아서',auto:1,sub:'약점이 있으면 이야기가 더 재밌어져요.'})+
+    '</section>'+
+    '<div class="nav"><button type="button" class="btn ghost" data-go="0">이전</button><button type="button" class="btn" data-go="2">친구 만들러 가기</button></div>';
+}
+function slotsHtml(){
+  var h='';
+  for(var i=0;i<MAX_CHARS;i++){
+    if(i<S.chars.length){
+      var c=S.chars[i];
+      h+='<button type="button" class="slot'+(i===S.active?' on':'')+'" data-slot="'+i+'" aria-label="친구 '+(i+1)+'">'+(c.emoji||String(i+1))+'</button>';
+    } else if(i===S.chars.length){
+      h+='<button type="button" class="slot add" data-slot="'+i+'" aria-label="친구 추가">+</button>';
+    } else {
+      h+='<span class="slot empty" aria-hidden="true">'+(i+1)+'</span>';
+    }
+  }
+  return h;
+}
+
+function step1(){
+  var c=S.chars[S.active];
+  var used=S.chars.map(function(x,i){ return i===S.active?'':x.emoji; });
+  var grid=EMOJIS.map(function(e){
+    var dis=used.indexOf(e)>-1;
+    return '<button type="button" class="em'+(c.emoji===e?' on':'')+'" data-emoji="'+e+'"'+(dis?' disabled':'')+' aria-label="이모지 '+e+'">'+e+'</button>';
+  }).join('');
+  return '<section class="panel"><h2>함께할 친구들 (최대 5명)</h2>'+
+    '<div id="slots">'+slotsHtml()+'</div>'+
+    field('이름','c.name',{req:1,ph:'새로 지은 이름',sub:'진짜 사람 이름은 쓸 수 없어요. 좋아하는 사람 느낌이면 성격만 적어요.'})+
+    field('성격','c.trait',{list:TRAITS,ph:'직접 써도 돼요',auto:1})+
+    field('말투','c.tone',{list:TONES,ph:'자주 쓰는 말을 적어도 좋아요',auto:1,sub:'친구마다 다르게 하면 더 재밌어요.'})+
+    field('이야기 속 역할','c.role',{list:CHAR_ROLES,ph:'직접 써도 돼요',auto:1})+
+    '<div class="field"><span class="lbl">대표 이모지<span class="req">꼭</span></span>'+
+    '<p class="sub">대사 앞에 붙는 그림이에요. 친구마다 달라야 해요.</p>'+
+    '<div class="emojis" id="emojis">'+grid+'</div></div>'+
+    field('좋아하는 것','c.like',{ph:'비워두면 알아서',auto:1})+
+    field('약점','c.weak',{ph:'비워두면 알아서',auto:1})+
+    (S.chars.length>1?'<div class="actions"><button type="button" class="btn ghost" data-act="delChar">이 친구 지우기</button></div>':'')+
+    '</section>'+
+    '<div class="nav"><button type="button" class="btn ghost" data-go="1">이전</button><button type="button" class="btn" data-go="3">완성하러 가기</button></div>';
+}
+
+/* ---------- 카드 만들기 ---------- */
+function v(x){ x=(x||'').trim(); return x?x:'알아서'; }
+function flowCard(){
+  var f=S.flow;
+  return ['흐름 카드','- 제목: '+v(f.title),'- 세계: '+v(f.world),'- 목표: '+v(f.goal),'- 분위기: '+v(f.mood),
+    '- 시작: '+v(f.start),'- 중간: '+v(f.mid),'- 끝: '+v(f.end)].join('\n');
+}
+function meCard(){
+  var f=S.flow;
+  return ['주인공 카드','- 별명: '+f.nick.trim(),'- 역할: '+v(f.role),'- 성격: '+v(f.mtrait),'- 특기: '+v(f.mskill),'- 좋아하는 것: '+v(f.mlike),'- 약점: '+v(f.mweak)].join('\n');
+}
+function filledChars(){ return S.chars.filter(function(c){ return c.name.trim()&&c.emoji; }); }
+function charCards(){
+  return filledChars().map(function(c,i){
+    return ['캐릭터 카드 '+(i+1),'- 이름: '+c.name.trim(),'- 성격: '+v(c.trait),'- 말투: '+v(c.tone),
+      '- 이야기 속 역할: '+v(c.role),'- 대표 이모지: '+c.emoji,'- 좋아하는 것: '+v(c.like),'- 약점: '+v(c.weak)].join('\n');
+  });
+}
+var START='[시작] 위 흐름 카드와 캐릭터 카드를 이야기 설정으로 쓴다. 카드가 있는 단계는 건너뛴다. 알아서로 적힌 칸은 진행자가 정하고 한 줄로 알려준다. 제목이 알아서이면 제목 후보 3개를 제안하고 아이가 고르면 이야기를 시작한다. 제목이 있으면 설명 없이 바로 이야기를 시작한다.';
+function promptText(){
+  return (lsGet('storyPrompt')||'').split('\n').filter(function(l){ return !/^\s*\[시작\]/.test(l); }).join('\n').trim();
+}
+function includePrompt(){ return lsGet('storyInclude')!=='0'; }
+function payload(){
+  var cards=[flowCard(),meCard()].concat(charCards()).join('\n\n');
+  var p=promptText();
+  return (p&&includePrompt())?(p+'\n\n'+cards+'\n\n'+START):cards;
+}
+
+/* ---------- 확인 ---------- */
+function missing(){
+  var m=[];
+  if(!S.flow.world.trim()) m.push('이야기의 세계');
+  if(!S.flow.goal.trim()) m.push('이야기의 목표');
+  if(!S.flow.nick.trim()) m.push('내 별명');
+  if(!S.chars[0].name.trim()||!S.chars[0].emoji) m.push('친구 1의 이름과 이모지');
+  S.chars.forEach(function(c,i){
+    if(i>0&&((c.name.trim()&&!c.emoji)||(!c.name.trim()&&c.emoji))) m.push('친구 '+(i+1)+'의 이름과 이모지');
+  });
+  return m;
+}
+function allFlags(){
+  var out=[], f=S.flow;
+  var fl={title:'제목',world:'세계',goal:'목표',mood:'분위기',nick:'내 별명',role:'내 역할',mtrait:'내 성격',mskill:'내 특기',mlike:'내 좋아하는 것',mweak:'내 약점',start:'시작',mid:'중간',end:'끝'};
+  Object.keys(fl).forEach(function(k){ if(flag(f[k])) out.push(fl[k]); });
+  var cl={name:'이름',trait:'성격',tone:'말투',role:'역할',like:'좋아하는 것',weak:'약점'};
+  S.chars.forEach(function(c,i){ Object.keys(cl).forEach(function(k){ if(flag(c[k])) out.push('친구 '+(i+1)+'의 '+cl[k]); }); });
+  return out;
+}
+
+function step2(){
+  var miss=missing(), fl=allFlags(), ready=!miss.length&&!fl.length;
+  var banner='';
+  if(miss.length) banner+='<div class="note warn">아직 비어 있는 곳이 있어요.<ul>'+miss.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul></div>';
+  if(fl.length) banner+='<div class="note warn">바꿔야 할 말이 있어요.<ul>'+fl.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul></div>';
+  if(ready) banner='<div class="note ok">카드가 다 채워졌어요. 복사해서 Gemini 새 채팅에 붙여넣어요.</div>';
+  var cards='<pre class="card">'+esc(flowCard())+'</pre><pre class="card">'+esc(meCard())+'</pre>'+charCards().map(function(c){ return '<pre class="card">'+esc(c)+'</pre>'; }).join('');
+  var p=promptText(), withP=p&&includePrompt();
+  var stories=loadStories();
+  var list=stories.length?stories.map(function(s,i){
+    return '<div class="story"><span class="t">'+esc(s.title||'제목 없는 이야기')+'</span>'+
+      '<button type="button" class="mini" data-load="'+i+'">불러오기</button>'+
+      '<button type="button" class="mini" data-del="'+i+'">지우기</button></div>';
+  }).join(''):'<p class="sub">아직 저장한 이야기가 없어요.</p>';
+  return banner+
+    '<section class="panel"><h2>내 카드</h2>'+cards+
+    '<p class="sub">'+(withP?'복사할 때 규칙 문서와 시작 문장이 함께 들어가요.':'카드만 복사돼요. 이야기 스킬이 켜진 Gemini 채팅에 붙여넣어요.')+'</p>'+
+    '<div class="actions">'+
+    '<button type="button" class="btn" data-act="copy"'+(ready?'':' disabled')+'>복사하기</button>'+
+    '<a class="btn ghost" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기</a>'+
+    '<button type="button" class="btn ghost" data-act="save">이야기 저장</button>'+
+    '</div>'+
+    '<textarea id="fallback" rows="8" readonly hidden aria-label="복사할 전체 내용"></textarea>'+
+    '</section>'+
+    '<section class="panel"><h2>내 이야기 보관함</h2>'+list+
+    '<div class="actions"><button type="button" class="btn ghost" data-act="reset">처음부터 다시</button></div></section>'+
+    '<details><summary>부모 설정</summary><section class="panel">'+
+    '<p class="sub">규칙 문서(지시문)를 한 번 붙여넣어 두면 복사할 때 카드와 합쳐져요. [시작] 줄은 자동으로 빠져요. 이 기기의 이 브라우저에만 저장돼요.</p>'+
+    '<textarea id="parentPrompt" rows="7" placeholder="규칙 문서 전체를 붙여넣어요" aria-label="규칙 문서">'+esc(lsGet('storyPrompt')||'')+'</textarea>'+
+    '<p class="sub" id="pStatus">'+(p?('저장됨 ('+p.length+'자)'):'저장된 규칙 문서가 없어요.')+'</p>'+
+    '<div class="actions"><button type="button" class="btn" data-act="saveP">규칙 문서 저장</button>'+
+    '<button type="button" class="btn ghost" data-act="clearP">지우기</button></div>'+
+    '<div class="field" style="margin-top:16px"><label style="display:flex;align-items:center;gap:10px;font-family:inherit;font-size:17px">'+
+    '<input type="checkbox" id="incP" style="width:24px;height:24px"'+(includePrompt()?' checked':'')+'> 복사할 때 규칙 문서 포함</label></div>'+
+    '</section></details>';
+}
+
+/* ---------- 그리기 ---------- */
+function render(toTop){
+  $('#tabs').innerHTML=['이야기','나','친구들','완성'].map(function(t,i){
+    return '<button type="button" class="tab'+(S.step===i?' on':'')+'" data-go="'+i+'"'+(S.step===i?' aria-current="step"':'')+'><span class="n">'+(i+1)+'</span>'+t+'</button>';
+  }).join('');
+  $('#main').innerHTML=[step0,stepMe,step1,step2][S.step]();
+  if(toTop){ window.scrollTo(0,0); }
+}
+function syncInput(path){
+  var inp=document.getElementById(idOf(path)); if(!inp) return;
+  inp.value=get(path); refreshField(inp);
+}
+function refreshField(inp){
+  var box=inp.closest('.field'); if(!box) return;
+  var val=inp.value, m=flag(val), h=box.querySelector('.hint');
+  if(h){ h.textContent=m; h.hidden=!m; }
+  box.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on',c.dataset.val===val); });
+}
+var tt;
+function toast(m){
+  var t=$('#toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(tt); tt=setTimeout(function(){ t.classList.remove('show'); },4200);
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.dataset&&t.dataset.path){ set(t.dataset.path,t.value); refreshField(t); }
+});
+document.addEventListener('change',function(e){
+  if(e.target.id==='incP'){ lsSet('storyInclude',e.target.checked?'1':'0'); }
+});
+document.addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  var d=b.dataset;
+  if(d.go!==undefined){ S.step=+d.go; render(true); return; }
+  if(d.chip){ set(d.chip,d.val); b.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on',c===b); }); syncInput(d.chip); return; }
+  if(d.auto){ set(d.auto,'알아서'); syncInput(d.auto); return; }
+  if(d.emoji){
+    S.chars[S.active].emoji=d.emoji;
+    document.querySelectorAll('#emojis .em').forEach(function(x){ x.classList.toggle('on',x.dataset.emoji===d.emoji); });
+    $('#slots').innerHTML=slotsHtml(); return;
+  }
+  if(d.slot!==undefined){
+    var i=+d.slot;
+    if(i===S.chars.length){ if(S.chars.length>=MAX_CHARS) return; S.chars.push(blank()); }
+    S.active=i; render(true); return;
+  }
+  if(d.load!==undefined){
+    var s=loadStories()[+d.load]; if(!s) return;
+    S.flow=Object.assign(blankFlow(),s.flow); S.chars=(s.chars&&s.chars.length?s.chars:[blank()]).map(function(c){ return Object.assign(blank(),c); });
+    S.active=0; S.step=3; render(true); toast('이야기를 불러왔어요.'); return;
+  }
+  if(d.del!==undefined){
+    var a=loadStories(); a.splice(+d.del,1); lsSet('stories',JSON.stringify(a)); render(); toast('지웠어요.'); return;
+  }
+  switch(d.act){
+    case 'delChar':
+      S.chars.splice(S.active,1); S.active=Math.max(0,S.active-1); render(true); break;
+    case 'copy': copyAll(); break;
+    case 'save': saveStory(); break;
+    case 'reset':
+      S.flow=blankFlow(); S.chars=[blank()]; S.active=0; S.step=0; render(true); toast('새로 시작해요.'); break;
+    case 'saveP':
+      var ta=$('#parentPrompt'); lsSet('storyPrompt',ta.value);
+      if(lsGet('storyInclude')===null) lsSet('storyInclude','1');
+      var ps=promptText(); $('#pStatus').textContent=ps?('저장됨 ('+ps.length+'자)'):'저장된 규칙 문서가 없어요.';
+      toast('규칙 문서를 저장했어요.'); break;
+    case 'clearP':
+      lsDel('storyPrompt'); $('#parentPrompt').value=''; $('#pStatus').textContent='저장된 규칙 문서가 없어요.'; toast('규칙 문서를 지웠어요.'); break;
+  }
+});
+
+function copyAll(){
+  var text=payload(), done=false;
+  function fallback(){
+    var ta=$('#fallback');
+    try{
+      ta.hidden=false; ta.value=text; ta.focus(); ta.select(); ta.setSelectionRange(0,text.length);
+      done=document.execCommand('copy');
+    }catch(err){ done=false; }
+    if(done){ ta.hidden=true; toast('복사했어요! Gemini 새 채팅에 붙여넣어요.'); }
+    else { toast('아래 상자를 길게 눌러 전체 선택한 뒤 복사해요.'); }
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast('복사했어요! Gemini 새 채팅에 붙여넣어요.'); },fallback);
+  } else { fallback(); }
+}
+function saveStory(){
+  var a=loadStories(), title=(S.flow.title.trim()&&S.flow.title.trim()!=='알아서')?S.flow.title.trim():(S.flow.nick.trim()?S.flow.nick.trim()+'의 이야기':'제목 없는 이야기');
+  var item={title:title,flow:S.flow,chars:S.chars,savedAt:Date.now()};
+  var idx=a.findIndex(function(x){ return x.title===title; });
+  if(idx>-1) a[idx]=item; else a.unshift(item);
+  a=a.slice(0,10);
+  if(lsSet('stories',JSON.stringify(a))){ render(); toast('저장했어요.'); }
+  else { toast('이 브라우저에서는 저장이 안 돼요. 카드를 복사해서 메모에 보관해요.'); }
+}
+
+render(false);
+})();
+</script>
+</body>
+</html>
