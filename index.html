@@ -78,7 +78,7 @@ input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,
 .slot.on{background:var(--butter);border-color:var(--butter);transform:rotate(-6deg)}
 .slot.add{border-style:dashed;font-size:30px;color:var(--muted)}
 .slot.empty{font-size:15px;color:var(--muted)}
-.emojis{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px}
+.emojis{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px;max-height:320px;overflow-y:auto;padding:2px}
 .em{min-height:56px;font-size:30px;line-height:1;border-radius:14px;border:2px solid var(--line);background:var(--chip-bg);cursor:pointer;padding:0}
 .em.on{background:var(--butter);border-color:var(--butter);transform:rotate(-4deg)}
 .em:disabled{opacity:.3;cursor:not-allowed}
@@ -134,13 +134,15 @@ summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font:400 
 var EMOJIS=['🐿️','🐻','🦊','🐰','🐱','🐶','🐼','🦉','🐸','🐧','🦄','🐉','🧙','🧚','🕵️','🚀','🌟','🍀','🌈','🍩','🐢','🦋','🐙','🐳','🦁','🐯','🐨','🦔','🎈','🔮'];
 var WORLDS=['마법학교','우주 여행','동물마을','탐정사무소','바닷속 왕국','숲속 모험'];
 var GOALS=['사라진 물건 찾기','수수께끼 풀기','친구 도와주기','비밀 장소 찾기','잃어버린 길 찾기'];
-var MOODS=['신나는','신비한','따뜻한','웃긴'];
+var MOODS=['신나는','신비한','따뜻한','웃긴','긴장감 있는','감동적인'];
 var MY_ROLES=['신입생','탐정 수습','모험가','견습 마법사'];
 var SKILLS=['관찰하기','기억하기','달리기','손재주','동물과 친해지기','그림 그리기'];
-var TRAITS=['덜렁대는','용감한','느긋한','똑똑한','장난꾸러기','다정한'];
+var TRAITS=['덜렁대는','용감한','느긋한','똑똑한','장난꾸러기','다정한','엉뚱한','꼼꼼한','씩씩한','차분한'];
 var TONES=['빠르고 신나게','느릿느릿 여유롭게','차분하고 또박또박','장난스럽게','다정하고 부드럽게'];
 var CHAR_ROLES=['같이 수사하는 친구','길을 아는 동물 친구','수수께끼 안내자','엉뚱한 라이벌','도와주는 선생님'];
-var MAX_CHARS=5;
+var MAX_CHARS=6;
+var MAX_PICK=3;
+EMOJIS=EMOJIS.concat(['🐹','🦝','🐮','🐷','🐵','🦒','🐘','🦓','🦘','🦥','🦦','🦩','🦜','🐤','🦆','🦢','🐝','🐞','🐌','🦀','🐠','🐬','🦕','🦖','🧝','🧞','🧜','🦸','🥷','👑','🎩','🔭','🔍','🔑','📚','🎒','🧭','⚡','⭐','🌙','🌸','🌻','🍁','🍄','🍓','🍉','🍪','🧁','🍙','🍕','🏰','⛵','🚂','🎨','🎵','🎮','⚽','🥋','🧩','🎲','🛸','🪐'].filter(function(e){ return EMOJIS.indexOf(e)<0; }));
 
 /* ---------- 안전 확인 (AI도 한 번 더 확인해요) ---------- */
 var MSG_OFF='이 말은 이야기랑 안 어울려요. 다른 말로 바꿔볼까요?';
@@ -173,14 +175,15 @@ function ref(path){ var p=path.split('.'); return p[0]==='flow'?[S.flow,p[1]]:[S
 function get(path){ var r=ref(path); return r[0][r[1]]||''; }
 function set(path,v){ var r=ref(path); r[0][r[1]]=v; }
 function idOf(path){ return 'f-'+path.replace('.','-'); }
+function parsePicks(s){ return (s||'').split(',').map(function(x){ return x.trim(); }).filter(function(x){ return x&&x!=='알아서'; }); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function $(s){ return document.querySelector(s); }
 
 /* ---------- 화면 조각 ---------- */
 function chips(path,list){
-  var cur=get(path);
+  var cur=parsePicks(get(path));
   return '<div class="chips">'+list.map(function(x){
-    return '<button type="button" class="chip'+(cur===x?' on':'')+'" data-chip="'+path+'" data-val="'+esc(x)+'">'+esc(x)+'</button>';
+    return '<button type="button" class="chip'+(cur.indexOf(x)>-1?' on':'')+'" data-chip="'+path+'" data-val="'+esc(x)+'">'+esc(x)+'</button>';
   }).join('')+'</div>';
 }
 function field(label,path,o){
@@ -189,7 +192,7 @@ function field(label,path,o){
   return '<div class="field">'+
     '<label for="'+id+'">'+label+(o.req?'<span class="req">꼭</span>':'')+'</label>'+
     (o.sub?'<p class="sub">'+o.sub+'</p>':'')+
-    (o.list?chips(path,o.list):'')+
+    (o.list?'<p class="sub">여러 개 골라도 돼요. 최대 '+MAX_PICK+'개예요.</p>':'')+(o.list?chips(path,o.list):'')+
     '<div class="row"><input type="text" id="'+id+'" data-path="'+path+'" value="'+esc(val)+'" placeholder="'+esc(o.ph||'')+'" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false">'+
     (o.auto?'<button type="button" class="mini" data-auto="'+path+'">알아서</button>':'')+
     '</div><p class="hint"'+(m?'':' hidden')+'>'+m+'</p></div>';
@@ -247,7 +250,7 @@ function step1(){
     var dis=used.indexOf(e)>-1;
     return '<button type="button" class="em'+(c.emoji===e?' on':'')+'" data-emoji="'+e+'"'+(dis?' disabled':'')+' aria-label="이모지 '+e+'">'+e+'</button>';
   }).join('');
-  return '<section class="panel"><h2>함께할 친구들 (최대 5명)</h2>'+
+  return '<section class="panel"><h2>함께할 친구들 (최대 6명)</h2>'+
     '<div id="slots">'+slotsHtml()+'</div>'+
     field('이름','c.name',{req:1,ph:'새로 지은 이름',sub:'진짜 사람 이름은 쓸 수 없어요. 좋아하는 사람 느낌이면 성격만 적어요.'})+
     field('성격','c.trait',{list:TRAITS,ph:'직접 써도 돼요',auto:1})+
@@ -367,7 +370,7 @@ function refreshField(inp){
   var box=inp.closest('.field'); if(!box) return;
   var val=inp.value, m=flag(val), h=box.querySelector('.hint');
   if(h){ h.textContent=m; h.hidden=!m; }
-  box.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on',c.dataset.val===val); });
+  var picks=parsePicks(val); box.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on',picks.indexOf(c.dataset.val)>-1); });
 }
 var tt;
 function toast(m){
@@ -387,7 +390,13 @@ document.addEventListener('click',function(e){
   var b=e.target.closest('button'); if(!b) return;
   var d=b.dataset;
   if(d.go!==undefined){ S.step=+d.go; render(true); return; }
-  if(d.chip){ set(d.chip,d.val); b.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on',c===b); }); syncInput(d.chip); return; }
+  if(d.chip){
+    var cur=parsePicks(get(d.chip)), at=cur.indexOf(d.val);
+    if(at>-1){ cur.splice(at,1); }
+    else if(cur.length>=MAX_PICK){ toast('최대 '+MAX_PICK+'개까지 고를 수 있어요. 하나를 빼고 골라요.'); return; }
+    else { cur.push(d.val); }
+    set(d.chip,cur.join(', ')); syncInput(d.chip); return;
+  }
   if(d.auto){ set(d.auto,'알아서'); syncInput(d.auto); return; }
   if(d.emoji){
     S.chars[S.active].emoji=d.emoji;
