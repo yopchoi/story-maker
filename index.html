@@ -98,6 +98,7 @@ pre.card{
 .note{margin:0 0 14px;padding:12px 14px;border-radius:14px;font-size:16px}
 .note.warn{background:var(--warn-bg);color:var(--warn-ink)}
 .note.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.titleLine{margin:16px 0 0;font:400 24px/1.35 "Jua","Apple SD Gothic Neo",sans-serif;overflow-wrap:anywhere}
 .note ul{margin:6px 0 0;padding-left:20px}
 .story{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:2px solid var(--line)}
 .story:first-child{border-top:0}
@@ -195,7 +196,10 @@ function field(label,path,o){
 }
 
 function step0(){
-  return '<section class="panel"><h2>이야기의 큰 줄기</h2>'+
+  return '<section class="panel"><h2>이야기 제목</h2>'+
+    field('제목','flow.title',{ph:'비워두면 나중에 같이 정해요',auto:1,sub:'이야기의 이름이에요. 나중에 채팅 이름으로도 써요.'})+
+    '</section>'+
+    '<section class="panel"><h2>이야기의 큰 줄기</h2>'+
     field('이야기의 세계','flow.world',{req:1,list:WORLDS,ph:'직접 써도 돼요',sub:'어디에서 일어나는 이야기일까요?'})+
     field('이야기의 목표','flow.goal',{req:1,list:GOALS,ph:'직접 써도 돼요',sub:'무엇을 찾거나 해결할까요?'})+
     field('분위기','flow.mood',{list:MOODS,ph:'직접 써도 돼요',auto:1})+
@@ -205,7 +209,6 @@ function step0(){
     field('시작','flow.start',{ph:'예: 아침에 종소리가 안 울려서 마을이 조용하다',auto:1})+
     field('중간','flow.mid',{ph:'예: 종탑에서 발자국과 반짝이는 가루를 발견한다',auto:1})+
     field('끝','flow.end',{ph:'예: 종이 숨겨진 이유를 알고 다시 울린다',auto:1})+
-    field('이야기 제목','flow.title',{ph:'비워두면 나중에 같이 정해요',auto:1})+
     '</section>'+
     '<div class="nav"><span></span><button type="button" class="btn" data-go="1">나를 만들러 가기</button></div>';
 }
@@ -310,6 +313,7 @@ function allFlags(){
   return out;
 }
 
+function titleLine(){ var t=S.flow.title.trim(); if(!t||t==='알아서') return ''; return '<p class="titleLine">📌 <strong>'+esc(t)+'</strong></p>'; }
 function step2(){
   var miss=missing(), fl=allFlags(), ready=!miss.length&&!fl.length;
   var banner='';
@@ -324,7 +328,7 @@ function step2(){
       '<button type="button" class="mini" data-load="'+i+'">불러오기</button>'+
       '<button type="button" class="mini" data-del="'+i+'">지우기</button></div>';
   }).join(''):'<p class="sub">아직 저장한 이야기가 없어요.</p>';
-  return banner+
+  return titleLine()+banner+
     '<section class="panel"><h2>내 카드</h2>'+cards+
     '<p class="sub">'+(withP?'복사할 때 규칙 문서와 시작 문장이 함께 들어가요.':'카드만 복사돼요. 이야기 스킬이 켜진 Gemini 채팅에 붙여넣어요.')+'</p>'+
     '<div class="actions">'+
